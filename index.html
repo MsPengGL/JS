@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=p, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <p>测试js函数的节流和防抖</p>
+</body>
+<script>
+  // 节流
+  /** 实现思路：
+  **  参数需要一个执行的频率，和一个对应的处理函数,
+  **  内部需要一个lastTime 变量记录上一次执行的时间
+  **/
+  // function throttle (func, wait) {
+  //   let lastTime = null
+  //   console.log('11', lastTime)
+  // 　// 为了避免每次调用lastTime都被清空，利用js的闭包返回一个function确保不声明全局变量也可以
+  //   return function () {
+  //     let now = new Date()
+  //     console.log('22', lastTime)
+  //     // 如果上次执行的时间和这次触发的时间大于一个执行周期，则执行
+  //     if (now - lastTime - wait > 0) {
+  //       console.log('33')
+  //       func()
+  //       lastTime = now
+  //     }
+  //   }
+  // }
+  // 改进后
+  function throttle (func, wait) {
+    let lastTime = null
+    let timeout
+    return function () {
+      let context = this
+      let now = new Date()
+      // 如果上次执行的时间和这次触发的时间大于一个执行周期，则执行
+      if (now - lastTime - wait > 0) {
+        // 如果之前有了定时任务则清除
+        if (timeout) {
+          clearTimeout(timeout)
+          timeout = null
+        }
+        func.apply(context, arguments)
+        lastTime = now
+      } else if (!timeout) {
+        timeout = setTimeout(() => {
+          // 改变执行上下文环境
+          func.apply(context, arguments)
+        }, wait)
+      }
+    }
+  }
+  // 防抖
+  function debounce (func, wait) {
+    let lastTime = null
+    let timeout
+    return function () {
+      let context = this
+      let now = new Date()
+      // 判定不是一次抖动
+      if (now - lastTime - wait > 0) {
+        setTimeout(() => {
+          func.apply(context, arguments)
+        }, wait)
+      } else {
+        if (timeout) {
+          clearTimeout(timeout)
+          timeout = null
+        }
+        timeout = setTimeout(() => {
+          func.apply(context, arguments)
+        }, wait)
+      }
+      // 注意这里lastTime是上次的触发时间
+      lastTime = now
+    }
+  }
+  let throttleRun = throttle(() => {
+  }, 2000)
+  let debounceRun = debounce(() => {
+  }, 2000)
+  window.addEventListener('mousemove', throttleRun)
+  window.addEventListener('mousemove', debounceRun)
+</script>
+</html>
